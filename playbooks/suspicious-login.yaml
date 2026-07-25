@@ -1,0 +1,47 @@
+id: suspicious-login
+name: Suspicious login from an unusual location
+version: "1"
+owner: SOC
+description: >-
+  Impossible-travel or new-geography sign-in. Deliberately light-touch: the
+  false-positive rate on this signal is high enough that disabling accounts
+  automatically would cost more than the attacks it catches.
+
+triggers: [identity.impossible_travel]
+inputs: [account, source_ip, distance_km]
+
+steps:
+  - id: ticket
+    action: open_ticket
+    params: { title: "Suspicious login for {account}", account: "{account}" }
+    approval: never
+    bind: { ticket_id: ticket_id }
+
+  - id: notify_user
+    action: notify
+    params:
+      channel: "@{account}"
+      message: "A sign-in from {source_ip} was flagged. Was this you? ({ticket_id})"
+    approval: never
+
+  - id: block_far
+    action: block_ip
+    description: Only for genuinely impossible travel, not a VPN hop.
+    when: "distance_km > 5000"
+    params: { ip: "{source_ip}" }
+    approval: destructive
+    rollback:
+      action: unblock_ip
+      params: { ip: "{source_ip}" }
+
+  - id: disable
+    action: disable_account
+    description: >-
+      Always a human decision. The signal is not reliable enough to disable
+      someone's account while they are trying to work.
+    when: "distance_km > 5000"
+    params: { account: "{account}" }
+    approval: always
+    rollback:
+      action: enable_account
+      params: { account: "{account}" }

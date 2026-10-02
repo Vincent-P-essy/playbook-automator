@@ -22,6 +22,14 @@ Note the `isolate` row. Its condition depends on a value an earlier step
 produces, so a dry run cannot honestly say whether it would run — and it says
 so, naming the condition, rather than guessing.
 
+<!-- execution-capture -->
+## Execution preview
+
+![Playbook automator](docs/screenshots/execution.png)
+
+A local dry run of suspicious-login using a fictional account and TEST-NET address. Connectors do not execute containment actions. The test suite is run separately. [Verification](docs/verification.md).
+<!-- /execution-capture -->
+
 ## The three properties that matter
 
 **Every destructive step declares how to undo it.** A step whose action is
